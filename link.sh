@@ -1,0 +1,1 @@
+sudo ln -s `pwd`/main.php /usr/bin/toggl2traffika
