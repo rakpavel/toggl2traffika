@@ -5,6 +5,7 @@ class Traffika
 	const PROJECTS_URL = '/projects';
 	const ACITVITIES_URL = '/activities';
 	const REPORTS_URL = '/users/{userId}/timesheets';
+	const DELETE_TIMESHEET_URL = '/users/{userId}/timesheets/{timesheet_id}';
 
 	private $apiUrl;
 	private $authToken;
@@ -12,9 +13,14 @@ class Traffika
 	private $user;
 	private $projects;
 	private $activities;
+	private $todayTimesheetApiURL;
+	private $timesheetDate;
 
 	public function __construct($config, $logger)
 	{
+		$this->timesheetDate = $this->transformDate("now");
+		$this->todayTimesheetApiURL = self::REPORTS_URL.'/'.$this->timesheetDate.'/'.$this->timesheetDate;
+
 		$this->logger = $logger;
 
 		$this->apiUrl = $config['traffika_api_url'];
@@ -26,6 +32,10 @@ class Traffika
 		$this->projects = $this->fetchProjects();
 		$this->activities = $this->fetchActivities();
 		$this->logger->taskDone();
+		$this->logger->announceTask('Fetching current Timesheet for today');
+		$this->todayTimesheets = $this->fetchTodayTimesheet();
+		$this->logger->taskDone();
+		$this->deleteTimesheets($this->todayTimesheets);
 	}
 
 	public function uploadReports(array $reports)
@@ -70,6 +80,39 @@ class Traffika
 			$activities[$activity['title']] = $activity['id'];
 		}
 		return $activities;
+	}
+
+	private function fetchTodayTimesheet()
+	{
+		$timesheetItems = [];
+		$url = strtr($this->todayTimesheetApiURL, ['{userId}' => $this->user['id']]);
+		$result = $this->requestApi($url);
+		$timesheets = $result['data']['time_entries'][$this->timesheetDate];
+		foreach ($timesheets as $timesheet) {
+			$timesheetItems[] = $timesheet;
+		}
+		return $timesheetItems;
+	}
+
+	private function deleteTimesheets($timesheets)
+	{
+		$confirmation = true;
+		if (count($timesheets) > 0) {
+			$confirmation = $this->logger->makeDeleteConfirmation($this->timesheetDate);
+		}
+		if ($confirmation === true) {
+			$this->logger->startCounter('Deleting reports in Traffika for date '.$this->timesheetDate, count($timesheets));
+
+			foreach ($timesheets as $timesheet) {
+				$url = strtr(self::DELETE_TIMESHEET_URL, [
+					'{userId}' => $this->user['id'],
+					'{timesheet_id}' => $timesheet['id'],
+					]
+				);
+				$this->requestApi($url, 'DELETE');
+				$this->logger->addCounter();
+			}
+		}
 	}
 
 	private function transformReports(array $reports)
