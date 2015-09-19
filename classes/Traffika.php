@@ -69,7 +69,7 @@ class Traffika
 		foreach ($result['data'] as $activity) {
 			$activities[$activity['title']] = $activity['id'];
 		}
-		return $activities;		
+		return $activities;
 	}
 
 	private function transformReports(array $reports)
@@ -127,7 +127,7 @@ class Traffika
 	{
 		$options = [
 			'http' => [
-				'header' => 'Authorization: Basic ' . $this->authToken . "\r\n" . 'X-Company-Domain: ' . $this->companyDomain,
+				'header' => "Content-Type: application/x-www-form-urlencoded\r\n" . 'Authorization: Basic ' . $this->authToken . "\r\n" . 'X-Company-Domain: ' . $this->companyDomain,
 				'method' => $method,
 			]
 		];
