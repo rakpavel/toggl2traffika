@@ -7,6 +7,9 @@ return [
 	'traffika_username' => 'you@usertechnologies.com',
 	'traffika_password' => 'your password',
 
+	// default activity if none is selected in toggl
+	'traffika_default_activity' => 'development + unit test',
+
 	// no need to modify the rest now
 	'traffika_company_domain' => 'usertechnologies.com',
 	'traffika_api_url' => 'https://appu.gettraffika.com/api'

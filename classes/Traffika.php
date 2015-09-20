@@ -15,6 +15,7 @@ class Traffika
 	private $activities;
 	private $todayTimesheetApiURL;
 	private $timesheetDate;
+	private $defaultActivityId;
 
 	public function __construct($config, $logger)
 	{
@@ -31,6 +32,9 @@ class Traffika
 		$this->user = $this->fetchUserInfo();
 		$this->projects = $this->fetchProjects();
 		$this->activities = $this->fetchActivities();
+		if (isset($config['traffika_default_activity'])) {
+			$this->defaultActivityId = $this->getActivityId($config['traffika_default_activity']);
+		}
 		$this->logger->taskDone();
 		$this->logger->announceTask('Fetching current Timesheet for today');
 		$this->todayTimesheets = $this->fetchTodayTimesheet();
@@ -125,7 +129,7 @@ class Traffika
 				'id' => null,
 				'user_id' => $this->user['id'],
 				'project_id' => $this->getProjectId($report['project']),
-				'activity_id' => $this->getActivityId($report['tags'][0]),
+				'activity_id' => $this->getActivityId(isset($report['tags'][0]) ? $report['tags'][0] : ''),
 				'date' => $this->transformDate($report['start']),
 				'time_spent' => $this->calculateTimeSpent($report['dur']),
 				'description' => $report['description'],
@@ -150,6 +154,9 @@ class Traffika
 	{
 		if (array_key_exists($activityName, $this->activities)) {
 			return $this->activities[$activityName];
+		}
+		if ($this->defaultActivityId) {
+			return $this->defaultActivityId;
 		}
 		$this->logger->taskFail('Activity "' . $activityName . '" is unknown to Traffika.');
 		exit();
