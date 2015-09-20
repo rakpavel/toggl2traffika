@@ -96,21 +96,21 @@ class Traffika
 
 	private function deleteTimesheets($timesheets)
 	{
-		$confirmation = true;
 		if (count($timesheets) > 0) {
 			$confirmation = $this->logger->makeDeleteConfirmation($this->timesheetDate);
-		}
-		if ($confirmation === true) {
-			$this->logger->startCounter('Deleting reports in Traffika for date '.$this->timesheetDate, count($timesheets));
 
-			foreach ($timesheets as $timesheet) {
-				$url = strtr(self::DELETE_TIMESHEET_URL, [
-					'{userId}' => $this->user['id'],
-					'{timesheet_id}' => $timesheet['id'],
-					]
-				);
-				$this->requestApi($url, 'DELETE');
-				$this->logger->addCounter();
+			if ($confirmation === true) {
+				$this->logger->startCounter('Deleting reports in Traffika for date '.$this->timesheetDate, count($timesheets));
+
+				foreach ($timesheets as $timesheet) {
+					$url = strtr(self::DELETE_TIMESHEET_URL, [
+						'{userId}' => $this->user['id'],
+						'{timesheet_id}' => $timesheet['id'],
+						]
+					);
+					$this->requestApi($url, 'DELETE');
+					$this->logger->addCounter();
+				}
 			}
 		}
 	}
