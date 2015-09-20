@@ -6,11 +6,15 @@ class Toggl
 
 	private $token;
 	private $logger;
+	private $workspace;
 
 	public function __construct($config, $logger)
 	{
 		$this->logger = $logger;
 		$this->token = $config['toggl_token'];
+		if (isset($config['toggl_workspace'])) {
+			$this->workspace = $config['toggl_workspace'];
+		}
 	}
 
 	public function getTodayReports()
@@ -33,7 +37,19 @@ class Toggl
 	private function fetchWorkspace()
 	{
 		$result = $this->requestApi(self::WORKSPACES_URL);
-		return $result[0]['id'];
+		$workspace = null;
+		if ($this->workspace) {
+			$tmp = array_filter($result, function($workspace) {
+				return $workspace['name'] === $this->workspace;
+			});
+			if (empty($tmp)) {
+				throw new RuntimeException("Invalid workspace. Workspace '{$this->workspace}' not found-");
+			}
+			$workspace = array_shift($tmp);
+		} else {
+			$workspace = $result[0];
+		}
+		return $workspace['id'];
 	}
 
 	private function fetchReports($workspaceId, DateTime $from, DateTime $to)
