@@ -2,6 +2,8 @@
 return [
 	// this token can be found in toggl profile
 	'toggl_token' => 'your toggle token',
+	 // workspace name or keep blank for first
+	'toggl_workspace' => null,
 
 	// your traffika credentials
 	'traffika_username' => 'you@usertechnologies.com',
