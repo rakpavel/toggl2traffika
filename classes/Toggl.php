@@ -20,26 +20,27 @@ class Toggl
 
 	public function getTodayReports()
 	{
-	  $fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
-	  $from = $fromTo[0];
-	  $to = $fromTo[1];
-      return $this->getReports($from, $to);
+		$fromTo = self::getFromToRespectingDeadline($this->deadlineHour);
+		$from = $fromTo[0];
+		$to = $fromTo[1];
+		return $this->getReports($from, $to);
 	}
 
-	public static function getFromToRespectingDeadline($deadlineHour) {
-	  $now = new DateTime();
-	  $deadline = new DateTime();
-	  $deadline->setTime($deadlineHour,0,0);
+	public static function getFromToRespectingDeadline($deadlineHour)
+	{
+		$now = new DateTime();
+		$deadline = new DateTime();
+		$deadline->setTime($deadlineHour, 0, 0);
 
-      if ($deadline > $now) {
-        $from = new DateTime('-1 days');
-        $to = new DateTime();
-	  } else {
-	  	$from = new DateTime();
-		$to = new DateTime('+1 days');
-	  }
+		if ($deadline > $now) {
+			$from = new DateTime('-1 days');
+			$to = new DateTime();
+		} else {
+			$from = new DateTime();
+			$to = new DateTime('+1 days');
+		}
 
-	  return [$from, $to];
+		return [$from, $to];
 	}
 
 	public function getReports(DateTime $from, DateTime $to)
@@ -60,12 +61,12 @@ class Toggl
 		$result = $this->requestApi(self::WORKSPACES_URL);
 		$workspace = null;
 		if ($this->workspaces) {
-			$tmp = array_filter($result, function($workspace) {
+			$tmp = array_filter($result, function ($workspace) {
 				return in_array($workspace['name'], $this->workspaces);
 			});
 			if (count($tmp) != count($this->workspaces)) {
-                $this->logger->taskFail("One of configured workspaces is invalid.");
-                exit();
+				$this->logger->taskFail("One of configured workspaces is invalid.");
+				exit();
 			}
 
 			$mapFunc = function ($item) {
