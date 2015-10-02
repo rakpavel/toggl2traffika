@@ -19,9 +19,9 @@ class Traffika
 
 	public function __construct($config, $logger)
 	{
-    $this->deadlineHour = $config['traffika_timesheet_deadline'];
-    $fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
-    
+		$this->deadlineHour = $config['traffika_timesheet_deadline'];
+		$fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
+
 		$this->timesheetDate = $fromTo[0]->format('Y-m-d');
 		$this->todayTimesheetApiURL = self::REPORTS_URL.'/'.$this->timesheetDate.'/'.$this->timesheetDate;
 
