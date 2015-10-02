@@ -12,25 +12,24 @@ class Toggl
 	{
 		$this->logger = $logger;
 		$this->token = $config['toggl_token'];
+		$this->deadlineHour = $config['traffika_timesheet_deadline'];
 		if (isset($config['toggl_workspace'])) {
-			$this->workspace = $config['toggl_workspace'];
+			$this->workspaces = $config['toggl_workspace'];
 		}
 	}
 
 	public function getTodayReports()
 	{
-		$from = new DateTime();
-		$to = new DateTime('+1 days');
-		return $this->getReports($from, $to);
+	  $fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
+	  $from = $fromTo[0];
+	  $to = $fromTo[1];
+      return $this->getReports($from, $to);
 	}
 
-	public function getReportsRespectingDeadline($deadlineHour)
-	{
+	public static function getFromToRespectingDeadline($deadlineHour) {
 	  $now = new DateTime();
-	  $now->setTimezone($datetimeZone);
 	  $deadline = new DateTime();
 	  $deadline->setTime($deadlineHour,0,0);
-	  $deadline->setTimezone($datetimeZone);
 
       if ($deadline > $now) {
         $from = new DateTime('-1 days');
@@ -40,35 +39,43 @@ class Toggl
 		$to = new DateTime('+1 days');
 	  }
 
-      return $this->getReports($from, $to);
+	  return [$from, $to];
 	}
 
 	public function getReports(DateTime $from, DateTime $to)
 	{
 		$this->logger->announceTask('Downloading reports from Toggl');
-		$workspaceId = $this->fetchWorkspace();
-		sleep(1);
-		$repors = $this->fetchReports($workspaceId, $from, $to);
+		$workspaceIds = $this->fetchWorkspace();
+		$reports = [];
+		foreach ($workspaceIds as $key => $value) {
+			sleep(1);
+			$reports = array_merge($reports, $this->fetchReports($value, $from, $to));
+		}
 		$this->logger->taskDone();
-		return $repors;
+		return $reports;
 	}
 
 	private function fetchWorkspace()
 	{
 		$result = $this->requestApi(self::WORKSPACES_URL);
 		$workspace = null;
-		if ($this->workspace) {
+		if ($this->workspaces) {
 			$tmp = array_filter($result, function($workspace) {
-				return $workspace['name'] === $this->workspace;
+				return in_array($workspace['name'], $this->workspaces);
 			});
-			if (empty($tmp)) {
-				throw new RuntimeException("Invalid workspace. Workspace '{$this->workspace}' not found-");
+			if (count($tmp) != count($this->workspaces)) {
+				throw new RuntimeException("One of configured workspaces is invalid.");
 			}
-			$workspace = array_shift($tmp);
+
+			$mapFunc = function ($item) {
+				return $item['id'];
+			};
+
+			return array_map($mapFunc, $tmp);
 		} else {
 			$workspace = $result[0];
+			return array($workspace['id']);
 		}
-		return $workspace['id'];
 	}
 
 	private function fetchReports($workspaceId, DateTime $from, DateTime $to)
