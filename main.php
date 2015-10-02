@@ -10,7 +10,6 @@ $logger = new Logger();
 date_default_timezone_set('Europe/Prague');
 
 $toggl = new Toggl($config, $logger);
-
 $reports = $toggl->getTodayReports();
 
 $traffika = new Traffika($config, $logger);
