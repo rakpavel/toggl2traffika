@@ -24,6 +24,25 @@ class Toggl
 		return $this->getReports($from, $to);
 	}
 
+	public function getReportsRespectingDeadline($deadlineHour)
+	{
+	  $now = new DateTime();
+	  $now->setTimezone($datetimeZone);
+	  $deadline = new DateTime();
+	  $deadline->setTime($deadlineHour,0,0);
+	  $deadline->setTimezone($datetimeZone);
+
+      if ($deadline > $now) {
+        $from = new DateTime('-1 days');
+        $to = new DateTime();
+	  } else {
+	  	$from = new DateTime();
+		$to = new DateTime('+1 days');
+	  }
+
+      return $this->getReports($from, $to);
+	}
+
 	public function getReports(DateTime $from, DateTime $to)
 	{
 		$this->logger->announceTask('Downloading reports from Toggl');
