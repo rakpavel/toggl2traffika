@@ -64,7 +64,8 @@ class Toggl
 				return in_array($workspace['name'], $this->workspaces);
 			});
 			if (count($tmp) != count($this->workspaces)) {
-				throw new RuntimeException("One of configured workspaces is invalid.");
+                $this->logger->taskFail("One of configured workspaces is invalid.");
+                exit();
 			}
 
 			$mapFunc = function ($item) {
