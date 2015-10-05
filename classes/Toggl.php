@@ -20,9 +20,7 @@ class Toggl
 
 	public function getTodayReports()
 	{
-		$fromTo = self::getFromToRespectingDeadline($this->deadlineHour);
-		$from = $fromTo[0];
-		$to = $fromTo[1];
+		list($from, $to) = self::getFromToRespectingDeadline($this->deadlineHour);
 		return $this->getReports($from, $to);
 	}
 
