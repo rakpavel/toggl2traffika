@@ -2,12 +2,15 @@
 return [
 	// this token can be found in toggl profile
 	'toggl_token' => 'your toggle token',
-	 // workspace name or keep blank for first
+	// array of workspace names or keep blank for the first
 	'toggl_workspace' => null,
 
 	// your traffika credentials
 	'traffika_username' => 'you@usertechnologies.com',
 	'traffika_password' => 'your password',
+
+	// deadline hour until you may upload data from previous day
+	'traffika_timesheet_deadline' => '12',
 
 	// default activity if none is selected in toggl
 	'traffika_default_activity' => 'development + unit test',
