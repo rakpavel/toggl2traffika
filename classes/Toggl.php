@@ -14,6 +14,11 @@ class Toggl
 		$this->token = $config['toggl_token'];
 		$this->deadlineHour = $config['traffika_timesheet_deadline'];
 		if (isset($config['toggl_workspace'])) {
+			if (!is_array($config['toggl_workspace'])) {
+				$config['toggl_workspace'] = [
+					$config['toggl_workspace']
+				];
+			}
 			$this->workspaces = $config['toggl_workspace'];
 		}
 	}
