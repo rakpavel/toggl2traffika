@@ -90,9 +90,22 @@ class Toggl
 			'{since}' => $from->format('Y-m-d'),
 			'{until}' => $to->format('Y-m-d')
 		];
+
 		$url = strtr(self::REPORTS_URL, $params);
 		$result = $this->requestApi($url);
-		return $result['data'];
+		$data = $result['data'];
+
+		// api can return only 50 reports at once, so we need to get other
+		// other pages while total_count is more than what we already have
+		$page = 1;
+		while ($result['total_count'] > $result['per_page'] * $page) {
+			sleep(1);
+			$pageUrl = $url . '&page=' . (++$page);
+			$result = $this->requestApi($pageUrl);
+			$data = array_merge($result['data'], $data);
+		}
+
+		return $data;
 	}
 
 	private function requestApi($url)
@@ -103,10 +116,10 @@ class Toggl
 				'method' => 'GET'
 			]
 		];
-
 		$context = stream_context_create($options);
 		$result = file_get_contents($url, false, $context);
 		$result = json_decode($result, true);
+
 		return $result;
 	}
 }

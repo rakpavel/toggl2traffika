@@ -30,15 +30,17 @@ class Invoicing
 		$this->summarized = [];
 
 		foreach($reports as $report) {
-			if (!isset($this->summarized[$report['client']])) {
-				$this->summarized[$report['client']] = [];
+			$client = empty($report['client']) ? 'Unknown' : $report['client'];
+
+			if (!isset($this->summarized[$client])) {
+				$this->summarized[$client] = [];
 			}
 
-			if (!isset($this->summarized[$report['client']][$report['project']])) {
-				$this->summarized[$report['client']][$report['project']] = 0;
+			if (!isset($this->summarized[$client][$report['project']])) {
+				$this->summarized[$client][$report['project']] = 0;
 			}
 
-			$this->summarized[$report['client']][$report['project']] += $report['dur'];
+			$this->summarized[$client][$report['project']] += $report['dur'];
 		}
 
 		$this->printSummary();
@@ -46,18 +48,21 @@ class Invoicing
 
 	public function printSummary()
 	{
-		$mask = "\t%-30.30s %5.2f\n";
+		$mask = "\t%-30.30s %6.2f\n";
+		$timeSum = 0;
 		print "\n";
 		
 		foreach ($this->summarized as $client => $projects) {
-			$client = empty($client) ? 'Unknown' : $client;
 			print "$client\n";
 
 			foreach ($projects as $project => $time) {
 				$time = ceil($time / 36000) / 100;
+				$timeSum += $time;
 				printf($mask, $project, $time);
 			}
 		}
+
+		printf("\nTotal: %6.2f\n", $timeSum);
 	}
 	
 }
