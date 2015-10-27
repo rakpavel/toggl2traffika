@@ -16,33 +16,32 @@ class Traffika
 	private $todayTimesheetApiURL;
 	private $timesheetDate;
 	private $defaultActivityId;
+	private $todayTimesheets;
+
+	/** @var Logger */
+	private $logger;
+
+	/** @var array */
+	private $config;
 
 	public function __construct($config, $logger)
 	{
+		$this->logger = $logger;
+		$this->config = $config;
+
 		$this->deadlineHour = $config['traffika_timesheet_deadline'];
 		$fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
 
 		$this->timesheetDate = $fromTo[0]->format('Y-m-d');
 		$this->todayTimesheetApiURL = self::REPORTS_URL.'/'.$this->timesheetDate.'/'.$this->timesheetDate;
 
-		$this->logger = $logger;
 
 		$this->apiUrl = $config['traffika_api_url'];
 		$this->authToken = base64_encode($config['traffika_username'] . ':' . $config['traffika_password']);
 		$this->companyDomain = $config['traffika_company_domain'];
 
-		$this->logger->announceTask('Fetching Traffika metadata');
-		$this->user = $this->fetchUserInfo();
-		$this->projects = $this->fetchProjects();
-		$this->activities = $this->fetchActivities();
-		if (isset($config['traffika_default_activity'])) {
-			$this->defaultActivityId = $this->getActivityId($config['traffika_default_activity']);
-		}
-		$this->logger->taskDone();
-		$this->logger->announceTask('Fetching current Timesheet for today');
-		$this->todayTimesheets = $this->fetchTodayTimesheet();
-		$this->logger->taskDone();
-		$this->deleteTimesheets($this->todayTimesheets);
+		$this->fetchMetadata();
+		$this->fetchCurrentTimesheet();
 	}
 
 	public function uploadReports(array $reports)
@@ -61,6 +60,26 @@ class Traffika
 			$this->logger->addCounter();
 			$this->requestApi($url, 'POST', $report);
 		}
+	}
+
+	private function fetchMetadata()
+	{
+		$this->logger->announceTask('Fetching Traffika metadata');
+		$this->user = $this->fetchUserInfo();
+		$this->projects = $this->fetchProjects();
+		$this->activities = $this->fetchActivities();
+		if (isset($this->config['traffika_default_activity'])) {
+			$this->defaultActivityId = $this->getActivityId($this->config['traffika_default_activity']);
+		}
+		$this->logger->taskDone();
+	}
+
+	private function fetchCurrentTimesheet()
+	{
+		$this->logger->announceTask('Fetching current Timesheet for today');
+		$this->todayTimesheets = $this->fetchTodayTimesheet();
+		$this->logger->taskDone();
+		$this->deleteTimesheets($this->todayTimesheets);
 	}
 
 	private function fetchUserInfo()

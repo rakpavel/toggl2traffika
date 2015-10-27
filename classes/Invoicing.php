@@ -1,8 +1,10 @@
 <?php
 class Invoicing
 {
+	private $summarized;
+
+	/** @var Logger */
 	private $logger;
-	private $sumarized;
 
 	public function __construct($logger)
 	{
