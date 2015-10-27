@@ -14,3 +14,10 @@ toggle2traffika is a simple script to transfer your Toggl reports to Traffika.
 3. Run `./link.sh` to link the program so you can use it anywhere
 
 Now you can run `toggle2traffika` in terminal and all your today reports will be uploaded to Traffika.
+
+## Invoicing Summary ##
+If you set up clients for projects in Toggl, you can get monthly time
+summary for each client and project.
+
+- `toggl2traffika -invoicing` returns a summary for current month
+- `toggl2traffika -invoicing 8/2015` returns a summary for the month given
