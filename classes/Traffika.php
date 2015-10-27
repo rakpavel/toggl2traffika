@@ -6,6 +6,7 @@ class Traffika
 	const ACITVITIES_URL = '/activities';
 	const REPORTS_URL = '/users/{userId}/timesheets';
 	const DELETE_TIMESHEET_URL = '/users/{userId}/timesheets/{timesheet_id}';
+	const GET_TIMESHEETS_URL = '/users/{userId}/timesheets/{from}/{to}';
 
 	private $apiUrl;
 	private $authToken;
@@ -41,11 +42,12 @@ class Traffika
 		$this->companyDomain = $config['traffika_company_domain'];
 
 		$this->fetchMetadata();
-		$this->fetchCurrentTimesheet();
 	}
 
 	public function uploadReports(array $reports)
 	{
+		$this->fetchCurrentTimesheet();
+
 		if (count($reports) == 0) {
 			$this->logger->log('No reports to upload.');
 			return;
@@ -60,6 +62,16 @@ class Traffika
 			$this->logger->addCounter();
 			$this->requestApi($url, 'POST', $report);
 		}
+	}
+
+	public function getTimesheets(DateTime $from, DateTime $to) {
+		$url = strtr(self::GET_TIMESHEETS_URL, [
+			'{userId}' => $this->user['id'],
+			'{from}' => $from->format('Y-m-d'),
+			'{to}' => $to->format('Y-m-d')
+		]);
+		$result = $this->requestApi($url);
+		return $result['data']['time_entries'];
 	}
 
 	private function fetchMetadata()

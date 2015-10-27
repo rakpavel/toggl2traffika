@@ -1,5 +1,5 @@
 <?php
-class Invoicing
+class Reporting
 {
 	private $summarized;
 
@@ -9,22 +9,6 @@ class Invoicing
 	public function __construct($logger)
 	{
 		$this->logger = $logger;
-	}
-
-	public function getPeriod($dateString)
-	{
-		list($month, $year) = explode('/', $dateString);
-		$date = $year . '-' . $month . '-01';
-		$start = new DateTime(date('Y-m-01', strtotime($date)));
-		$end = new DateTime(date('Y-m-t', strtotime($date)));
-		return [$start, $end];
-	}
-
-	public function getCurrentMonthPeriod()
-	{
-		$start = new DateTime(date('Y-m-01'));
-		$end = new DateTime(date('Y-m-t'));
-		return [$start, $end];
 	}
 
 	public function summarize($reports)
