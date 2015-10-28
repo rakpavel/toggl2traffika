@@ -5,8 +5,10 @@ class Toggl
 	const REPORTS_URL = 'https://toggl.com/reports/api/v2/details?workspace_id={workspaceId}&since={since}&until={until}&user_agent=api_test';
 
 	private $token;
+	private $workspaces;
+
+	/** @var Logger */
 	private $logger;
-	private $workspace;
 
 	public function __construct($config, $logger)
 	{

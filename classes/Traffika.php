@@ -6,6 +6,7 @@ class Traffika
 	const ACITVITIES_URL = '/activities';
 	const REPORTS_URL = '/users/{userId}/timesheets';
 	const DELETE_TIMESHEET_URL = '/users/{userId}/timesheets/{timesheet_id}';
+	const GET_TIMESHEETS_URL = '/users/{userId}/timesheets/{from}/{to}';
 
 	private $apiUrl;
 	private $authToken;
@@ -16,37 +17,37 @@ class Traffika
 	private $todayTimesheetApiURL;
 	private $timesheetDate;
 	private $defaultActivityId;
+	private $todayTimesheets;
+
+	/** @var Logger */
+	private $logger;
+
+	/** @var array */
+	private $config;
 
 	public function __construct($config, $logger)
 	{
+		$this->logger = $logger;
+		$this->config = $config;
+
 		$this->deadlineHour = $config['traffika_timesheet_deadline'];
 		$fromTo = Toggl::getFromToRespectingDeadline($this->deadlineHour);
 
 		$this->timesheetDate = $fromTo[0]->format('Y-m-d');
 		$this->todayTimesheetApiURL = self::REPORTS_URL.'/'.$this->timesheetDate.'/'.$this->timesheetDate;
 
-		$this->logger = $logger;
 
 		$this->apiUrl = $config['traffika_api_url'];
 		$this->authToken = base64_encode($config['traffika_username'] . ':' . $config['traffika_password']);
 		$this->companyDomain = $config['traffika_company_domain'];
 
-		$this->logger->announceTask('Fetching Traffika metadata');
-		$this->user = $this->fetchUserInfo();
-		$this->projects = $this->fetchProjects();
-		$this->activities = $this->fetchActivities();
-		if (isset($config['traffika_default_activity'])) {
-			$this->defaultActivityId = $this->getActivityId($config['traffika_default_activity']);
-		}
-		$this->logger->taskDone();
-		$this->logger->announceTask('Fetching current Timesheet for today');
-		$this->todayTimesheets = $this->fetchTodayTimesheet();
-		$this->logger->taskDone();
-		$this->deleteTimesheets($this->todayTimesheets);
+		$this->fetchMetadata();
 	}
 
 	public function uploadReports(array $reports)
 	{
+		$this->fetchCurrentTimesheet();
+
 		if (count($reports) == 0) {
 			$this->logger->log('No reports to upload.');
 			return;
@@ -61,6 +62,36 @@ class Traffika
 			$this->logger->addCounter();
 			$this->requestApi($url, 'POST', $report);
 		}
+	}
+
+	public function getTimesheets(DateTime $from, DateTime $to) {
+		$url = strtr(self::GET_TIMESHEETS_URL, [
+			'{userId}' => $this->user['id'],
+			'{from}' => $from->format('Y-m-d'),
+			'{to}' => $to->format('Y-m-d')
+		]);
+		$result = $this->requestApi($url);
+		return $result['data']['time_entries'];
+	}
+
+	private function fetchMetadata()
+	{
+		$this->logger->announceTask('Fetching Traffika metadata');
+		$this->user = $this->fetchUserInfo();
+		$this->projects = $this->fetchProjects();
+		$this->activities = $this->fetchActivities();
+		if (isset($this->config['traffika_default_activity'])) {
+			$this->defaultActivityId = $this->getActivityId($this->config['traffika_default_activity']);
+		}
+		$this->logger->taskDone();
+	}
+
+	private function fetchCurrentTimesheet()
+	{
+		$this->logger->announceTask('Fetching current Timesheet for today');
+		$this->todayTimesheets = $this->fetchTodayTimesheet();
+		$this->logger->taskDone();
+		$this->deleteTimesheets($this->todayTimesheets);
 	}
 
 	private function fetchUserInfo()

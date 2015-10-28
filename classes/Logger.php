@@ -1,25 +1,40 @@
 <?php
 class Logger
 {
+	const LEVEL_ERROR = 1;
+	const LEVEL_INFO = 2;
+
+	private $level = self::LEVEL_INFO;
+
 	private $counter = [
 		'label' => '',
 		'current' => 0,
 		'total' => 0
 	];
 
+	public function setLevel($level) {
+		$this->level = $level;
+	}
+
 	public function log($message)
 	{
-		print "$message\n";
+		if ($this->level >= self::LEVEL_INFO) {
+			print "$message\n";
+		}
 	}
 
 	public function announceTask($task)
 	{
-		print "$task...";
+		if ($this->level >= self::LEVEL_INFO) {
+			print "$task...";
+		}
 	}
 
 	public function taskDone()
 	{
-		print "\033[32m Done\033[0m\n";
+		if ($this->level >= self::LEVEL_INFO) {
+			print "\033[32m Done\033[0m\n";
+		}
 	}
 
 	public function taskFail($message)
