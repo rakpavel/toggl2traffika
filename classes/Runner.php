@@ -50,7 +50,7 @@ class Runner
 		$toggl = new Toggl($this->config, $this->logger);
 		$traffika = new Traffika($this->config, $this->logger);
 
-		$reports = $toggl->getTodayReports();
+		$reports = $toggl->getThisMonthReports();
 		$traffika->uploadReports($reports);
 	}
 

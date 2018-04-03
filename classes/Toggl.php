@@ -31,6 +31,13 @@ class Toggl
 		return $this->getReports($from, $to);
 	}
 
+	public function getThisMonthReports()
+	{
+		$from = new DateTime('2018-03-01');
+		$to = new DateTime('2018-03-31');
+		return $this->getReports($from, $to);
+	}
+
 	public static function getFromToRespectingDeadline($deadlineHour)
 	{
 		$now = new DateTime();

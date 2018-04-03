@@ -2,7 +2,7 @@
 class Traffika
 {
 	const AUTH_URL = '/auth';
-	const PROJECTS_URL = '/projects';
+	const PROJECTS_URL = '/timesheets/projects';
 	const ACITVITIES_URL = '/activities';
 	const REPORTS_URL = '/users/{userId}/timesheets';
 	const DELETE_TIMESHEET_URL = '/users/{userId}/timesheets/{timesheet_id}';
