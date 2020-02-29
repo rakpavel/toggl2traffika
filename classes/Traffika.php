@@ -159,6 +159,10 @@ class Traffika
 
 		$this->logger->announceTask('Preparing reports for import');
 		foreach($reports as $report) {
+			if($this->getProjectId($report['project']) === null) {
+				continue;
+			}
+
 			$newReports[] = [
 				'id' => null,
 				'user_id' => $this->user['id'],
@@ -170,7 +174,7 @@ class Traffika
 				'deleted' => 0
 			];
 		}
-		$this->logger->taskDone();
+		$this->logger->taskDone('Preparing reports for import');
 
 		return $newReports;
 	}
@@ -180,8 +184,9 @@ class Traffika
 		if (array_key_exists($projectName, $this->projects)) {
 			return $this->projects[$projectName];
 		}
-		$this->logger->taskFail('Project "' . $projectName . '" is unknown to Traffika.');
-		exit();
+		printf("\r\n");
+		printf('Project "' . $projectName . '" is unknown to Traffika.');
+		return null;
 	}
 
 	private function getActivityId($activityName)
