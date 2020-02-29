@@ -33,8 +33,9 @@ class Toggl
 
 	public function getThisMonthReports()
 	{
-		$from = new DateTime('2018-03-01');
-		$to = new DateTime('2018-03-31');
+		$from = new DateTime(date('Y-m-01'));
+		$to = new DateTime(date('Y-m-t'));
+		
 		return $this->getReports($from, $to);
 	}
 
